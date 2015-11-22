@@ -224,11 +224,19 @@ local function seekFrameIndex(intervals, timer)
   return i
 end
 
-function Animation:setFrameStart(keyframe, delegate)
-  self.onFrameStart[keyframe] = delegate
+function Animation:reset()
+	self.timer = 0
+end
+
+function Animation:assignFrameStart(keyframe, delegate)
+	self.onFrameStart[keyframe] = delegate
 end
 
 function Animation:update(dt)
+	if self.timer == 0 and self.onFrameStart[1] ~= nil then
+		self.onFrameStart[1](self)
+	end
+
   if self.status ~= "playing" then return end
 
   self.timer = self.timer + dt
@@ -239,11 +247,11 @@ function Animation:update(dt)
     f(self, loops)
   end
 
-  local prevpos = self.position
+	local prevpos = self.position
   self.position = seekFrameIndex(self.intervals, self.timer)
   if self.position ~= prevpos and self.onFrameStart[self.position] then
-    self.onFrameStart[self.position](self)
-  end
+  	self.onFrameStart[self.position](self)
+	end
 end
 
 function Animation:pause()
